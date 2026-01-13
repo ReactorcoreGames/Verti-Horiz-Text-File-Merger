@@ -1,7 +1,11 @@
 # Verti-Horiz Text File Merger
-
 An offline standalone web app to merge TXT files vertically or append them horizontally.
-Made by Reactorcore @ https://reactorcore.itch.io/
+
+Use the web app here: https://reactorcoregames.github.io/Verti-Horiz-Text-File-Merger/
+
+![vertihoriz_textmerger_itch](https://github.com/user-attachments/assets/250aecda-6ce0-4d48-a6cc-33bd56f86cc5)
+
+<img width="1198" height="1018" alt="Verti-Horiz Text File Merger_screenshot" src="https://github.com/user-attachments/assets/0421fae8-4180-42ef-9d92-0374ccdf48f7" />
 
 ---
 
