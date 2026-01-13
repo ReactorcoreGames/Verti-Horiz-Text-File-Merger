@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verti-Horiz Text File Merger - Vertical TXT Merge & Horizontal TXT Append</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #3c3832;
+            background: linear-gradient(135deg, #f7f4f0 0%, #f0ebe4 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 10px 10px;
+            background: linear-gradient(135deg, #8b7355 0%, #a68b5b 50%, #9d8471 100%);
+            border-radius: 12px;
+            color: #f7f4f0;
+            box-shadow: 0 8px 24px rgba(139, 115, 85, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 400;
+			margin-bottom: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: none;
+            margin-bottom: 10px;
+            background: #e8ddd4;
+            border-radius: 10px;
+            padding: 4px;
+            box-shadow: inset 0 2px 4px rgba(139, 115, 85, 0.1);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #5d5347;
+        }
+
+        .tab-button:hover {
+            background: rgba(139, 115, 85, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #c17817 0%, #d4941e 100%);
+            color: #f7f4f0;
+            box-shadow: 0 4px 12px rgba(193, 120, 23, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .tab-content {
+            display: none;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(139, 115, 85, 0.15);
+            border: 1px solid #e8ddd4;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e8ddd4;
+        }
+
+        .section-header h2 {
+            color: #5d5347;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .help-btn {
+            background: linear-gradient(135deg, #b85c38 0%, #c96843 100%);
+            color: #f7f4f0;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(184, 92, 56, 0.3);
+        }
+
+        .help-btn:hover {
+            background: linear-gradient(135deg, #a04d32 0%, #b85c38 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(184, 92, 56, 0.4);
+        }
+
+        .file-upload-area {
+            border: 2px dashed #a68b5b;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #f9f6f2 0%, #f4efea 100%);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-upload-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(166, 139, 91, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .file-upload-area:hover {
+            border-color: #8b7355;
+            background: linear-gradient(135deg, #f4efea 0%, #efe8e0 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(139, 115, 85, 0.2);
+        }
+
+        .file-upload-area:hover::before {
+            left: 100%;
+        }
+
+        .file-upload-area.dragover {
+            border-color: #7a9b6c;
+            background: linear-gradient(135deg, #e8f2e2 0%, #ddebd4 100%);
+            transform: scale(1.02);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #7a9b6c 0%, #8ba876 100%);
+            color: #f7f4f0;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(122, 155, 108, 0.3);
+        }
+
+        .upload-btn:hover {
+            background: linear-gradient(135deg, #6b8a5d 0%, #7a9b6c 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(122, 155, 108, 0.4);
+        }
+
+        .file-list {
+            margin: 15px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f0ebe4 0%, #e8ddd4 100%);
+            border-radius: 8px;
+            min-height: 40px;
+            border: 1px solid #d4c4b0;
+        }
+
+        .file-item {
+            display: inline-block;
+            background: linear-gradient(135deg, #8b7355 0%, #a68b5b 100%);
+            color: #f7f4f0;
+            padding: 6px 12px;
+            margin: 3px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(139, 115, 85, 0.3);
+        }
+
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f9f6f2 0%, #f4efea 100%);
+            border-radius: 10px;
+            border: 1px solid #e8ddd4;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            transform: scale(1.3);
+            accent-color: #8b7355;
+        }
+
+        .checkbox-group label {
+            cursor: pointer;
+            font-weight: 500;
+            color: #5d5347;
+        }
+
+        .horizontal-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-section {
+            border: 1px solid #d4c4b0;
+            border-radius: 10px;
+            padding: 20px;
+            background: linear-gradient(135deg, #fdfcfa 0%, #f9f6f2 100%);
+        }
+
+        .input-section h3 {
+            margin-bottom: 15px;
+            color: #5d5347;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .preview-area {
+            margin: 20px 0;
+        }
+
+        .preview-area h3 {
+            margin-bottom: 10px;
+            color: #5d5347;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .preview-textarea {
+            width: 100%;
+            height: 400px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 20px;
+            border: 2px solid #d4c4b0;
+            border-radius: 10px;
+            resize: vertical;
+            background: linear-gradient(135deg, #fdfcfa 0%, #f9f6f2 100%);
+            color: #3c3832;
+            transition: border-color 0.3s ease;
+        }
+
+        .preview-textarea:focus {
+            outline: none;
+            border-color: #8b7355;
+            box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .action-btn:hover::before {
+            left: 100%;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #7a9b6c 0%, #8ba876 100%);
+            color: #f7f4f0;
+            box-shadow: 0 4px 12px rgba(122, 155, 108, 0.3);
+        }
+
+        .copy-btn:hover {
+            background: linear-gradient(135deg, #6b8a5d 0%, #7a9b6c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(122, 155, 108, 0.4);
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #c17817 0%, #d4941e 100%);
+            color: #f7f4f0;
+            box-shadow: 0 4px 12px rgba(193, 120, 23, 0.3);
+        }
+
+        .download-btn:hover {
+            background: linear-gradient(135deg, #a8650f 0%, #c17817 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(193, 120, 23, 0.4);
+        }
+
+        .sister-link {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #e8f2e2 0%, #ddebd4 100%);
+            border-radius: 10px;
+            border-left: 4px solid #7a9b6c;
+            border: 1px solid #c5d4bb;
+        }
+
+        .sister-link a {
+            color: #6b8a5d;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .sister-link a:hover {
+            color: #5a7651;
+            text-decoration: underline;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 30px 20px;
+            border-top: 1px solid #d4c4b0;
+            background: linear-gradient(135deg, #f4efea 0%, #efe8e0 100%);
+            border-radius: 10px;
+        }
+
+        .footer a {
+            color: #8b7355;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #6b5940;
+            text-decoration: underline;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(60, 56, 50, 0.6);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #ffffff 0%, #fdfcfa 100%);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(139, 115, 85, 0.3);
+            border: 1px solid #e8ddd4;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e8ddd4;
+        }
+
+        .modal-header h2 {
+            color: #5d5347;
+            font-weight: 600;
+        }
+
+        .close {
+            color: #8b7355;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #5d5347;
+        }
+
+        .modal h3 {
+            color: #5d5347;
+            margin: 20px 0 10px 0;
+            font-weight: 600;
+        }
+
+        .modal p, .modal li {
+            color: #3c3832;
+            margin-bottom: 8px;
+        }
+
+        .modal ol, .modal ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .horizontal-inputs {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .tabs {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+
+        /* Subtle animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Enhanced focus states for accessibility */
+        .upload-btn:focus,
+        .action-btn:focus,
+        .help-btn:focus {
+            outline: 3px solid rgba(139, 115, 85, 0.3);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Verti-Horiz Text File Merger</h1>
+            <p>Merge TXT files vertically or append them horizontally with ease</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('vertical')">📚 Vertical Merge</button>
+            <button class="tab-button" onclick="switchTab('horizontal')">🔄 Horizontal Append</button>
+        </div>
+
+        <!-- Vertical Tab -->
+        <div id="vertical" class="tab-content active">
+            <div class="section-header">
+                <h2>Vertical File Merging</h2>
+                <button class="help-btn" onclick="showHelp('vertical')">? Help</button>
+            </div>
+
+            <div class="file-upload-area" id="verticalDropZone">
+                <p>Drag and drop multiple text files here, or click to select files</p>
+                <button class="upload-btn" onclick="document.getElementById('verticalFiles').click()">
+                    Select Files
+                </button>
+                <input type="file" id="verticalFiles" class="file-input" multiple accept=".txt" onchange="handleVerticalFiles(this.files)">
+            </div>
+
+            <div class="file-list" id="verticalFileList">
+                <em>No files selected</em>
+            </div>
+
+            <div class="preview-area">
+                <h3>Preview:</h3>
+                <textarea class="preview-textarea" id="verticalPreview" readonly placeholder="Upload files to see the merged result here..."></textarea>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn copy-btn" onclick="copyToClipboard('verticalPreview')">📋 Copy to Clipboard</button>
+                <button class="action-btn download-btn" onclick="downloadResult('verticalPreview', 'merged_vertical.txt')">💾 Download as TXT</button>
+            </div>
+        </div>
+
+        <!-- Horizontal Tab -->
+        <div id="horizontal" class="tab-content">
+            <div class="section-header">
+                <h2>Horizontal File Appending</h2>
+                <button class="help-btn" onclick="showHelp('horizontal')">? Help</button>
+            </div>
+
+            <div class="horizontal-inputs">
+                <div class="input-section">
+                    <h3>Base File (Left)</h3>
+                    <div class="file-upload-area" id="baseDropZone">
+                        <p>Drop base text file here</p>
+                        <button class="upload-btn" onclick="document.getElementById('baseFile').click()">
+                            Select Base File
+                        </button>
+                        <input type="file" id="baseFile" class="file-input" accept=".txt" onchange="handleBaseFile(this.files[0])">
+                    </div>
+                    <div id="baseFileName" class="file-list"><em>No file selected</em></div>
+                </div>
+
+                <div class="input-section">
+                    <h3>Addon File (Right)</h3>
+                    <div class="file-upload-area" id="addonDropZone">
+                        <p>Drop addon text file here</p>
+                        <button class="upload-btn" onclick="document.getElementById('addonFile').click()">
+                            Select Addon File
+                        </button>
+                        <input type="file" id="addonFile" class="file-input" accept=".txt" onchange="handleAddonFile(this.files[0])">
+                    </div>
+                    <div id="addonFileName" class="file-list"><em>No file selected</em></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="addonAfter" checked onchange="updateHorizontalPreview()">
+                    <label for="addonAfter">Addon lines come after base lines</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="repeatAddon" checked onchange="updateHorizontalPreview()">
+                    <label for="repeatAddon">Repeat addon lines if shorter than base</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="removeExtraSpaces" onchange="updateHorizontalPreview()">
+                    <label for="removeExtraSpaces">Remove extra double spaces</label>
+                </div>
+            </div>
+
+            <div class="preview-area">
+                <h3>Preview:</h3>
+                <textarea class="preview-textarea" id="horizontalPreview" readonly placeholder="Upload both files to see the appended result here..."></textarea>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn copy-btn" onclick="copyToClipboard('horizontalPreview')">📋 Copy to Clipboard</button>
+                <button class="action-btn download-btn" onclick="downloadResult('horizontalPreview', 'merged_horizontal.txt')">💾 Download as TXT</button>
+            </div>
+        </div>
+		<div class="sister-link">
+            <strong>Related Tool:</strong> Need to remove duplicate lines? Check out my 
+            <a href="https://reactorcore.itch.io/text-line-duplicate-remover" target="_blank">Text Line Duplicate Remover</a> too!
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><a href="https://reactorcore.itch.io/" target="_blank">Made by Reactorcore @ https://reactorcore.itch.io</a></p>
+    </div>
+
+    <!-- Help Modals -->
+    <div id="verticalHelp" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Vertical Stacking Help</h2>
+                <span class="close" onclick="closeModal('verticalHelp')">&times;</span>
+            </div>
+            <div>
+                <h3>What it does:</h3>
+                <p>The Vertical Merger combines multiple text files into one, joining them one after another in alphabetical filename order.</p>
+                
+                <h3>How to use:</h3>
+                <ol>
+                    <li>Upload multiple text files by dragging them onto the upload area or clicking "Select Files"</li>
+                    <li>Files will be automatically sorted alphabetically by filename</li>
+                    <li>Each file's content will start on a new line</li>
+                    <li>Preview the result in the text area</li>
+                    <li>Copy to clipboard or download the merged file</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div id="horizontalHelp" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Horizontal Append Help</h2>
+                <span class="close" onclick="closeModal('horizontalHelp')">&times;</span>
+            </div>
+            <div>
+                <h3>What it does:</h3>
+                <p>The Horizontal Appender combines two text files line by line, merging corresponding lines from each file.</p>
+                
+                <h3>How to use:</h3>
+                <ol>
+                    <li>Upload a base file (left slot) and an addon file (right slot)</li>
+                    <li>Choose whether addon lines come before or after base lines</li>
+                    <li>Enable "Repeat addon lines" to loop addon content if it's shorter</li>
+                    <li>Enable "Remove extra spaces" to clean up formatting</li>
+                    <li>Preview the result and copy or download</li>
+                </ol>
+
+                <h3>Options:</h3>
+                <ul>
+                    <li><strong>Addon after base:</strong> Places addon text after base text on each line</li>
+                    <li><strong>Repeat addon:</strong> If addon has fewer lines, it loops from the beginning</li>
+                    <li><strong>Remove extra spaces:</strong> Converts multiple spaces to single spaces</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let verticalFiles = [];
+        let baseFileContent = '';
+        let addonFileContent = '';
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Help modals
+        function showHelp(type) {
+            document.getElementById(type + 'Help').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Vertical file handling
+        function handleVerticalFiles(files) {
+            verticalFiles = Array.from(files);
+            updateVerticalFileList();
+            processVerticalFiles();
+        }
+
+        function updateVerticalFileList() {
+            const fileList = document.getElementById('verticalFileList');
+            if (verticalFiles.length === 0) {
+                fileList.innerHTML = '<em>No files selected</em>';
+                return;
+            }
+
+            // Sort files alphabetically by name
+            verticalFiles.sort((a, b) => a.name.localeCompare(b.name));
+            
+            fileList.innerHTML = verticalFiles.map(file => 
+                `<span class="file-item">${file.name}</span>`
+            ).join(' ');
+        }
+
+        function processVerticalFiles() {
+            if (verticalFiles.length === 0) {
+                document.getElementById('verticalPreview').value = '';
+                return;
+            }
+
+            const promises = verticalFiles.map(file => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve({ name: file.name, content: e.target.result });
+                    reader.onerror = reject;
+                    reader.readAsText(file);
+                });
+            });
+
+            Promise.all(promises).then(results => {
+                // Sort by filename
+                results.sort((a, b) => a.name.localeCompare(b.name));
+                
+                // Join content with newlines
+                const mergedContent = results.map(result => result.content.trim()).join('\n');
+                document.getElementById('verticalPreview').value = mergedContent;
+            }).catch(error => {
+                alert('Error reading files: ' + error.message);
+            });
+        }
+
+        // Horizontal file handling
+        function handleBaseFile(file) {
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                baseFileContent = e.target.result;
+                document.getElementById('baseFileName').innerHTML = `<span class="file-item">${file.name}</span>`;
+                updateHorizontalPreview();
+            };
+            reader.readAsText(file);
+        }
+
+        function handleAddonFile(file) {
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                addonFileContent = e.target.result;
+                document.getElementById('addonFileName').innerHTML = `<span class="file-item">${file.name}</span>`;
+                updateHorizontalPreview();
+            };
+            reader.readAsText(file);
+        }
+
+        function updateHorizontalPreview() {
+            if (!baseFileContent || !addonFileContent) {
+                document.getElementById('horizontalPreview').value = '';
+                return;
+            }
+
+            // Normalize line endings and split, then clean each line
+            const baseLines = baseFileContent.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').map(line => line.trim());
+            const addonLines = addonFileContent.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').map(line => line.trim());
+            
+            const addonAfter = document.getElementById('addonAfter').checked;
+            const repeatAddon = document.getElementById('repeatAddon').checked;
+            const removeExtraSpaces = document.getElementById('removeExtraSpaces').checked;
+
+            const result = [];
+
+            for (let i = 0; i < baseLines.length; i++) {
+                let baseLine = baseLines[i];
+                let addonLine = '';
+
+                if (i < addonLines.length) {
+                    addonLine = addonLines[i];
+                } else if (repeatAddon && addonLines.length > 0) {
+                    addonLine = addonLines[i % addonLines.length];
+                }
+
+                let mergedLine;
+                if (addonLine) {
+                    if (addonAfter) {
+                        mergedLine = baseLine + ' ' + addonLine;
+                    } else {
+                        mergedLine = addonLine + ' ' + baseLine;
+                    }
+                } else {
+                    mergedLine = baseLine;
+                }
+
+                if (removeExtraSpaces) {
+                    mergedLine = mergedLine.replace(/\s+/g, ' ').trim();
+                }
+
+                result.push(mergedLine);
+            }
+
+            document.getElementById('horizontalPreview').value = result.join('\n');
+        }
+
+        // Drag and drop functionality
+        function setupDragAndDrop(dropZoneId, fileInputId, handler) {
+            const dropZone = document.getElementById(dropZoneId);
+            
+            dropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    if (fileInputId === 'verticalFiles') {
+                        handler(files);
+                    } else {
+                        handler(files[0]);
+                    }
+                }
+            });
+        }
+
+        // Clipboard functionality
+        function copyToClipboard(textareaId) {
+            const textarea = document.getElementById(textareaId);
+            if (!textarea.value.trim()) {
+                alert('Nothing to copy!');
+                return;
+            }
+
+            navigator.clipboard.writeText(textarea.value).then(function() {
+                alert('Content copied to clipboard!');
+            }).catch(function(err) {
+                // Fallback for older browsers
+                textarea.select();
+                document.execCommand('copy');
+                alert('Content copied to clipboard!');
+            });
+        }
+
+        // Download functionality
+        function downloadResult(textareaId, filename) {
+            const textarea = document.getElementById(textareaId);
+            if (!textarea.value.trim()) {
+                alert('Nothing to download!');
+                return;
+            }
+
+            const blob = new Blob([textarea.value], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Initialize drag and drop
+        document.addEventListener('DOMContentLoaded', function() {
+            setupDragAndDrop('verticalDropZone', 'verticalFiles', handleVerticalFiles);
+            setupDragAndDrop('baseDropZone', 'baseFile', handleBaseFile);
+            setupDragAndDrop('addonDropZone', 'addonFile', handleAddonFile);
+        });
+    </script>
+</body>
+</html>
